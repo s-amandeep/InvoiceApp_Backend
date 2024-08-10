@@ -11,6 +11,4 @@ public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Optional<Customer> findById(Long id);
 
     List<Customer> findAll();
-
-    Customer save(Customer customer);
 }

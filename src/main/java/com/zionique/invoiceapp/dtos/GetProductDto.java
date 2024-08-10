@@ -4,12 +4,16 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @AllArgsConstructor
 public class GetProductDto {
     private String brandName;
-    private String price;
+    private Double price;
     private Long variantId;
     private String description;
+    private Double stock;
+    private String unitOfMeasurement;
 }

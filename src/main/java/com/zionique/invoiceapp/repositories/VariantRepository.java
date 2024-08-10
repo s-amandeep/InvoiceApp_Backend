@@ -12,8 +12,10 @@ import java.util.Optional;
 public interface VariantRepository extends JpaRepository<Variant, Long> {
     Optional<Variant> findByDescriptionAndPriceOption(String description, PriceOption priceOption);
 
-    @Query("SELECT new com.zionique.invoiceapp.dtos.GetProductDto(v.priceOption.product.brandName, v.priceOption.price, v.id, v.description) " +
+    @Query("SELECT new com.zionique.invoiceapp.dtos.GetProductDto(v.priceOption.brand.name, v.priceOption.price, v.id, v.description," +
+            "v.stock, v.unitOfMeasurement.name) " +
             "FROM Variant v " +
-            "ORDER BY v.priceOption.product.brandName ASC, v.priceOption.price ASC")
+            "ORDER BY v.priceOption.brand.name ASC, v.priceOption.price ASC")
     List<GetProductDto> findAllSortedByBrandAndPrice();
+
 }

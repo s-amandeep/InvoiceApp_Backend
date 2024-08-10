@@ -4,36 +4,22 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "price_option")
+@Table(name = "price_option", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"brand_id", "price"})
+})
 public class PriceOption extends BaseModel {
-    private String price;
+    @Column(precision = 10, nullable = false)
+    private Double price;
 
     @ManyToOne
-    @JoinColumn(name = "product_id")
-    private Product product;
+    @JoinColumn(name = "brand_id", nullable = false)
+    private Brand brand;
 
-    @OneToMany(mappedBy = "priceOption", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Variant> variants = new HashSet<>();
-
-    // Helper method to manage bidirectional relationship
-    public void addVariant(Variant variant) {
-        if (variants == null) {
-            variants = new HashSet<>();
-        }
-        variants.add(variant);
-        variant.setPriceOption(this);
-    }
-
-    public void removeVariant(Variant variant) {
-        if (variants != null) {
-            variants.remove(variant);
-            variant.setPriceOption(null);
-        }
-    }
 }
