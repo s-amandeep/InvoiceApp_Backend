@@ -19,23 +19,4 @@ public class Brand extends BaseModel{
 
     public Brand() {
     }
-
-//    @OneToMany(mappedBy = "brand", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private Set<PriceOption> priceOptions = new HashSet<>();
-//
-//    // Helper method to manage bidirectional relationship
-//    public void addPriceOption(PriceOption priceOption) {
-//        if (priceOptions == null) {
-//            priceOptions = new HashSet<>();
-//        }
-//        priceOptions.add(priceOption);
-//        priceOption.setBrand(this);
-//    }
-//
-//    public void removePriceOption(PriceOption priceOption) {
-//        if (priceOptions != null) {
-//            priceOptions.remove(priceOption);
-//            priceOption.setBrand(null);
-//        }
-//    }
 }

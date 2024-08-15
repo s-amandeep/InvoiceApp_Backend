@@ -18,4 +18,6 @@ public interface VariantRepository extends JpaRepository<Variant, Long> {
             "ORDER BY v.priceOption.brand.name ASC, v.priceOption.price ASC")
     List<GetProductDto> findAllSortedByBrandAndPrice();
 
+    List<Variant> findAllByPriceOption_Id(Long id);
+
 }

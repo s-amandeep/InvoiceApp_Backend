@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -36,6 +37,50 @@ public class ProductController {
         return response;
     }
 
+    @GetMapping("/brands")
+    public ResponseEntity<List<GetBrandDto>> getAllBrands(){
+        List<Brand> brands = productService.getAllBrands();
+        List<GetBrandDto> brandDtos = new ArrayList<>();
+        for (Brand brand: brands) {
+            GetBrandDto brandDto = new GetBrandDto();
+            brandDto.setId(brand.getId());
+            brandDto.setName(brand.getName());
+            brandDtos.add(brandDto);
+        }
+        ResponseEntity<List<GetBrandDto>> response = new ResponseEntity<>(brandDtos, HttpStatus.OK);
+        return response;
+    }
+
+    @GetMapping("/prices")
+    public ResponseEntity<List<GetPriceDto>> getPricesForBrand(@RequestParam("brandId") Long brandId){
+        List<PriceOption> priceOptions = productService.getPricesForBrand(brandId);
+        List<GetPriceDto> priceDtos = new ArrayList<>();
+        for (PriceOption priceOption: priceOptions) {
+            GetPriceDto priceDto = new GetPriceDto();
+            priceDto.setId(priceOption.getId());
+            priceDto.setPrice(priceOption.getPrice());
+            priceDtos.add(priceDto);
+        }
+        ResponseEntity<List<GetPriceDto>> response = new ResponseEntity<>(priceDtos, HttpStatus.OK);
+        return response;
+    }
+
+    @GetMapping("/variants")
+    public ResponseEntity<List<VariantDto>> getVariantsForPriceAndBrand(@RequestParam("priceId") Long priceId){
+        List<Variant> variants = productService.getVariantsForPriceAndBrand(priceId);
+        List<VariantDto> variantDtos = new ArrayList<>();
+        for (Variant variant: variants) {
+            VariantDto variantDto = new VariantDto();
+            variantDto.setId(variant.getId());
+            variantDto.setDescription(variant.getDescription());
+            variantDto.setStock(variant.getStock());
+            variantDto.setUnitOfMeasurement(variant.getUnitOfMeasurement().getName());
+            variantDtos.add(variantDto);
+        }
+        ResponseEntity<List<VariantDto>> response = new ResponseEntity<>(variantDtos, HttpStatus.OK);
+        return response;
+    }
+
     @DeleteMapping("/{variantId}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long variantId) {
         try {
@@ -45,4 +90,5 @@ public class ProductController {
             return ResponseEntity.notFound().build();
         }
     }
+
 }

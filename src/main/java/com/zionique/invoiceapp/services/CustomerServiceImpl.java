@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -16,6 +17,16 @@ public class CustomerServiceImpl implements CustomerService{
     public Customer addNewCustomer(Customer customer) {
         Customer newCustomer = customerRepository.save(customer);
         return newCustomer;
+    }
+
+    @Override
+    public Customer getCustomerFromId(Long id) {
+        Optional<Customer> optionalCustomer = customerRepository.findById(id);
+        if (optionalCustomer.isPresent()){
+            return optionalCustomer.get();
+        } else {
+            throw new RuntimeException("Customer not found");
+        }
     }
 
     @Override

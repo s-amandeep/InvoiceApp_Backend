@@ -1,6 +1,7 @@
 package com.zionique.invoiceapp.services;
 
 import com.zionique.invoiceapp.dtos.AddProductDto;
+import com.zionique.invoiceapp.dtos.GetBrandDto;
 import com.zionique.invoiceapp.dtos.GetProductDto;
 import com.zionique.invoiceapp.models.PriceOption;
 import com.zionique.invoiceapp.models.Brand;
@@ -78,10 +79,62 @@ public class ProductServiceImpl implements ProductService{
     @Override
     @Transactional
     public void deleteProductById(Long id) {
-        if (variantRepository.existsById(id)) {
-            variantRepository.deleteById(id);
+//        if (variantRepository.existsById(id)) {
+//            // Get the associated price option
+//            variantRepository.deleteById(id);
+//        } else {
+//            throw new RuntimeException("Product not found");
+//        }
+        // Find the variant by ID
+        Variant variant = variantRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        // Get the associated price option
+        PriceOption priceOption = variant.getPriceOption();
+
+        // Delete the variant
+        variantRepository.delete(variant);
+
+        // Check if the price option has any other variants
+        List<Variant> remainingVariants = variantRepository.findAllByPriceOption_Id(priceOption.getId());
+
+        if (remainingVariants.isEmpty()) {
+            // No other variants, delete the price option
+            priceOptionRepository.delete(priceOption);
+
+            // Check if the brand has any other price options
+            Brand brand = priceOption.getBrand();
+            List<PriceOption> remainingPriceOptions = priceOptionRepository.findAllByBrand_Id(brand.getId());
+
+            if (remainingPriceOptions.isEmpty()) {
+                // No other price options, delete the brand
+                brandRepository.delete(brand);
+            }
+        }
+    }
+
+    @Override
+    public List<Brand> getAllBrands() {
+        return brandRepository.findAll();
+    }
+
+    @Override
+    public List<PriceOption> getPricesForBrand(Long brandId) {
+        return priceOptionRepository.findAllByBrand_Id(brandId);
+    }
+
+    @Override
+    public List<Variant> getVariantsForPriceAndBrand(Long priceId) {
+        return variantRepository.findAllByPriceOption_Id(priceId);
+    }
+
+    @Override
+    public Variant getVariantById(Long id) {
+        Optional<Variant> optionalVariant = variantRepository.findById(id);
+        if (optionalVariant.isPresent()){
+            return optionalVariant.get();
         } else {
-            throw new RuntimeException("Product not found");
+            throw new RuntimeException("Variant not found");
         }
     }
 }
