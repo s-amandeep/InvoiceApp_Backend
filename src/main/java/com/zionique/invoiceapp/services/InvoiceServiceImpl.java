@@ -7,6 +7,9 @@ import com.zionique.invoiceapp.repositories.InvoiceItemRepository;
 import com.zionique.invoiceapp.repositories.InvoiceRepository;
 import com.zionique.invoiceapp.repositories.VariantRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,8 +40,9 @@ public class InvoiceServiceImpl implements InvoiceService{
     }
 
     @Override
-    public List<Invoice> getAllInvoices() {
-        return invoiceRepository.findAll();
+    public Page<Invoice> getAllInvoicesSortedByDate(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        return invoiceRepository.findAllByOrderByCreatedAtDesc(pageRequest);
     }
 
     @Override

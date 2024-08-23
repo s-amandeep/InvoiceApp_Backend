@@ -1,6 +1,8 @@
 package com.zionique.invoiceapp.controllers;
 
 import com.zionique.invoiceapp.dtos.AddInvoiceDto;
+import com.zionique.invoiceapp.dtos.GetInvoiceDto;
+import com.zionique.invoiceapp.dtos.GetInvoiceItemDto;
 import com.zionique.invoiceapp.dtos.InvoiceItemDto;
 import com.zionique.invoiceapp.models.Customer;
 import com.zionique.invoiceapp.models.Invoice;
@@ -10,13 +12,14 @@ import com.zionique.invoiceapp.services.CustomerService;
 import com.zionique.invoiceapp.services.InvoiceService;
 import com.zionique.invoiceapp.services.ProductService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @RestController
 @AllArgsConstructor
@@ -27,11 +30,76 @@ public class InvoiceController {
     private ProductService productService;
 
     @PostMapping
-    public ResponseEntity<Void> createInvoice(@RequestBody AddInvoiceDto addInvoiceDto) {
+    public ResponseEntity<GetInvoiceDto> createInvoice(@RequestBody AddInvoiceDto addInvoiceDto) {
         Invoice invoice = getInvoiceFromAddInvoiceDto(addInvoiceDto);
         Invoice createdInvoice = invoiceService.addNewInvoice(invoice);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-//        return new ResponseEntity<>(createdInvoice, HttpStatus.CREATED);
+
+        GetInvoiceDto getInvoiceDto = getGetInvoiceDtoFromInvoice(createdInvoice);
+
+        return new ResponseEntity<>(getInvoiceDto, HttpStatus.CREATED);
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<GetInvoiceDto>> getAllInvoices(@RequestParam(defaultValue = "0") int page,
+                                                              @RequestParam(defaultValue = "10") int size) {
+        Page<Invoice> invoices = invoiceService.getAllInvoicesSortedByDate(page, size);
+//        List<GetInvoiceDto> invoiceDtos = new ArrayList<>();
+//        for (Invoice invoice: invoices){
+//            GetInvoiceDto getInvoiceDto = getGetInvoiceDtoFromInvoice(invoice);
+//            invoiceDtos.add(getInvoiceDto);
+//        }
+        return new ResponseEntity<>(invoices.map(this::getGetInvoiceDtoFromInvoice), HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<GetInvoiceDto> getInvoiceById(@PathVariable Long id) {
+        Optional<Invoice> optionalInvoice = invoiceService.getInvoiceById(id);
+        if (optionalInvoice.isPresent()){
+            Invoice invoice = optionalInvoice.get();
+            GetInvoiceDto getInvoiceDto = getGetInvoiceDtoFromInvoice(invoice);
+            return new ResponseEntity<>(getInvoiceDto, HttpStatus.OK);
+        }
+        else {
+            return ResponseEntity.noContent().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteInvoice(@PathVariable Long id) {
+        invoiceService.deleteInvoiceById(id);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    private GetInvoiceDto getGetInvoiceDtoFromInvoice(Invoice createdInvoice) {
+        // Format the date
+        LocalDate localDate = convertToLocalDate(createdInvoice.getInvoiceDate());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MMMM-yyyy", Locale.ENGLISH);
+        String formattedDate = localDate.format(formatter);
+
+        GetInvoiceDto getInvoiceDto = new GetInvoiceDto();
+        getInvoiceDto.setInvoiceId(createdInvoice.getId());
+        getInvoiceDto.setCustomerName(createdInvoice.getCustomer().getName());
+        getInvoiceDto.setCustomerAddress(createdInvoice.getCustomer().getAddress());
+        getInvoiceDto.setCustomerMobile(createdInvoice.getCustomer().getMobile());
+        getInvoiceDto.setInvoiceDate(formattedDate);
+        getInvoiceDto.setTotalValue(createdInvoice.getTotalValue());
+        List<GetInvoiceItemDto> itemDtoList = new ArrayList<>();
+        for (InvoiceItem invoiceItem: createdInvoice.getItems()){
+            GetInvoiceItemDto invoiceItemDto = new GetInvoiceItemDto();
+            invoiceItemDto.setBrandName(invoiceItem.getVariant().getPriceOption().getBrand().getName());
+            invoiceItemDto.setPrice(invoiceItem.getVariant().getPriceOption().getPrice());
+            invoiceItemDto.setDescription(invoiceItem.getVariant().getDescription());
+            invoiceItemDto.setQuantity(invoiceItem.getQuantity());
+            invoiceItemDto.setSellingPrice(invoiceItem.getSellingPrice());
+            invoiceItemDto.setTotalPrice(invoiceItem.getTotalPrice());
+            itemDtoList.add((invoiceItemDto));
+        }
+        getInvoiceDto.setItemDtoList(itemDtoList);
+
+        return getInvoiceDto;
+    }
+    private LocalDate convertToLocalDate(Date date) {
+        return new java.sql.Date(date.getTime()).toLocalDate();
     }
 
     private Invoice getInvoiceFromAddInvoiceDto(AddInvoiceDto addInvoiceDto) {
@@ -57,28 +125,5 @@ public class InvoiceController {
         Variant variant = productService.getVariantById(invoiceItemDto.getVariantId());
         invoiceItem.setVariant(variant);
         return  invoiceItem;
-    }
-
-    @GetMapping
-    public List<Invoice> getAllInvoices() {
-        return invoiceService.getAllInvoices();
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Invoice> getInvoiceById(@PathVariable Long id) {
-        Optional<Invoice> optionalInvoice = invoiceService.getInvoiceById(id);
-        if (optionalInvoice.isPresent()){
-            Invoice invoice = optionalInvoice.get();
-            return new ResponseEntity<>(invoice, HttpStatus.OK);
-        }
-        else {
-            return ResponseEntity.noContent().build();
-        }
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteInvoice(@PathVariable Long id) {
-        invoiceService.deleteInvoiceById(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

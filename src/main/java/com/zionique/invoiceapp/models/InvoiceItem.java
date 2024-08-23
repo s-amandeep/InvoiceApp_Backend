@@ -12,11 +12,12 @@ import lombok.Setter;
 @Entity
 public class InvoiceItem extends BaseModel{
 
+//    @ManyToOne(fetch = FetchType.LAZY)
     @ManyToOne
     @JoinColumn(name = "variant_id", nullable = false)
     private Variant variant;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "invoice_id")
     private Invoice invoice;
 
