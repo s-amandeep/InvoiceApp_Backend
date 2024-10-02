@@ -1,32 +1,43 @@
 package com.zionique.invoiceapp.services;
 
+import com.zionique.invoiceapp.jwt.JwtUtil;
 import com.zionique.invoiceapp.models.User;
 import com.zionique.invoiceapp.repositories.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
 public class AuthService {
 
+
     private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
+
+
+    private JwtUtil jwtUtil;
+//    private PasswordEncoder passwordEncoder;
 
     public String signup(User user) {
-        if (userRepository.findByMobile(user.getMobile()) != null) {
+        if (userRepository.findByMobile(user.getMobile()).isPresent()) {
             return "Mobile number already registered.";
         }
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
         userRepository.save(user);
         return "User registered successfully.";
     }
 
     public User login(String mobile, String password) {
-        User user = userRepository.findByMobile(mobile);
-        if (user != null && passwordEncoder.matches(password, user.getPassword())) {
-            return user;
-        }
+//        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(mobile, password));
+
+        User user = userRepository.findByMobile(mobile).orElseThrow(() -> new RuntimeException("User not found"));
+        String token = jwtUtil.generateToken(mobile);
         return null;
     }
 }
