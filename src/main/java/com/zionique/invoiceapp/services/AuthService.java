@@ -33,11 +33,11 @@ public class AuthService {
         return "User registered successfully.";
     }
 
-    public User login(String mobile, String password) {
-//        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(mobile, password));
-
-        User user = userRepository.findByMobile(mobile).orElseThrow(() -> new RuntimeException("User not found"));
-        String token = jwtUtil.generateToken(mobile);
-        return null;
-    }
+//    public User login(String mobile, String password) {
+////        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(mobile, password));
+//
+//        User user = userRepository.findByMobile(mobile).orElseThrow(() -> new RuntimeException("User not found"));
+//        String token = jwtUtil.generateToken(mobile);
+//        return null;
+//    }
 }

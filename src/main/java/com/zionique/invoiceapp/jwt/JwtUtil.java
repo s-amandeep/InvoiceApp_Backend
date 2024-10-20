@@ -1,11 +1,17 @@
 package com.zionique.invoiceapp.jwt;
 
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -51,13 +57,25 @@ public class JwtUtil {
     @Value("${jwt.secret}")
     private String secret;
 
+    private Key jwtSecretKey;
+
     @Value("${jwt.expiration}")
     private long expirationTime;
-//    private String SECRET_KEY = "your_secret_key"; // Make sure to use a strong secret key
+
+    @PostConstruct
+    public void init() {
+        byte[] keyBytes = Decoders.BASE64.decode(secret); // Decode the base64-encoded key
+        jwtSecretKey = Keys.hmacShaKeyFor(keyBytes); // Create a secure key for HS256
+    }
 
     // Extract the mobile number (username) from the JWT token
     public String getMobileFromToken(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+    public String getRoleFromToken(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("roles").toString();
     }
 
     // Extract expiration date from the JWT token
@@ -74,7 +92,7 @@ public class JwtUtil {
     // Method to extract all claims from the token using the updated JWT API
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
-                .setSigningKey(secret)
+                .setSigningKey(jwtSecretKey)
                 .build() // Build the parser
                 .parseClaimsJws(token) // Parse the token
                 .getBody(); // Get the claims body
@@ -86,9 +104,14 @@ public class JwtUtil {
     }
 
     // Generate a token for a specific user (mobile number)
-    public String generateToken(String mobile) {
+    public String generateToken(UserDetails userDetails, List<String> roles, String name) {
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, mobile);
+//        claims.put("Role", )
+        // Add roles to the JWT token
+//        claims.put("roles", userDetails.getAuthorities().iterator().next().getAuthority());
+        claims.put("name", name);
+        claims.put("roles", roles);
+        return createToken(claims, userDetails.getUsername());
     }
 
     // Create the token with claims, subject, and expiration details
@@ -97,14 +120,20 @@ public class JwtUtil {
                 .setClaims(claims)
                 .setSubject(subject)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours expiration
-                .signWith(SignatureAlgorithm.HS256, secret)
+                .setExpiration(new Date(System.currentTimeMillis() + expirationTime)) // 10 hours expiration
+                .signWith(jwtSecretKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
     // Validate the token
     public Boolean validateToken(String token, String mobile) {
         final String username = getMobileFromToken(token);
+//        try {
+//            Jwts.parser().setSigningKey(jwtSecretKey).parseClaimsJws(token);
+//            return true;
+//        } catch (Exception e) {
+//            return false;
+//        }
         return (username.equals(mobile) && !isTokenExpired(token));
     }
 }

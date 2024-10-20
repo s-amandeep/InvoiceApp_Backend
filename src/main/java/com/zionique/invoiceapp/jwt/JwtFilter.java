@@ -1,6 +1,7 @@
 package com.zionique.invoiceapp.jwt;
 
 import com.zionique.invoiceapp.services.CustomUserDetailsService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,14 +27,23 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String authorizationHeader = request.getHeader("Authorization");
+        final String authorizationHeader = request.getHeader("Authorization");
 
         String token = null;
         String mobile = null;
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             token = authorizationHeader.substring(7);
-            mobile = jwtUtil.getMobileFromToken(token);
+            try {
+                mobile = jwtUtil.getMobileFromToken(token);
+            } catch (IllegalArgumentException e) {
+                System.out.println("Unable to get JWT Token");
+            } catch (ExpiredJwtException e) {
+                System.out.println("JWT Token has expired");
+            }
+//            mobile = jwtUtil.getMobileFromToken(token);
+        } else {
+            logger.warn("JWT Token does not begin with Bearer String");
         }
 
         if (mobile != null && SecurityContextHolder.getContext().getAuthentication() == null) {
