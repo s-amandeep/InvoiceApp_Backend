@@ -14,6 +14,7 @@ public class AddInvoiceDto {
 
     private Long customerId;
     private Date invoiceDate;
+    private Double totalTax;
     private Double totalValue;
     private List<InvoiceItemDto> items = new ArrayList<>();
 }

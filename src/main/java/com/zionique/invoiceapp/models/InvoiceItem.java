@@ -21,7 +21,7 @@ public class InvoiceItem extends BaseModel{
     @JoinColumn(name = "invoice_id")
     private Invoice invoice;
 
-    private Float quantity;
+    private Double quantity;
     private Double sellingPrice;
     private Double totalPrice;
 }

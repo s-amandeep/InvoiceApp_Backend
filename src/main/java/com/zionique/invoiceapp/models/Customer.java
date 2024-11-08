@@ -13,6 +13,7 @@ public class Customer extends BaseModel{
     private String name;
     private String address;
     private String mobile;
+    private String gstin;
 
     public Customer() {
 

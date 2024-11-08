@@ -1,15 +1,10 @@
 package com.zionique.invoiceapp.services;
 
 import com.zionique.invoiceapp.dtos.AddProductDto;
-import com.zionique.invoiceapp.dtos.GetBrandDto;
 import com.zionique.invoiceapp.dtos.GetProductDto;
-import com.zionique.invoiceapp.models.Brand;
-import com.zionique.invoiceapp.models.PriceOption;
-import com.zionique.invoiceapp.models.UnitOfMeasurement;
-import com.zionique.invoiceapp.models.Variant;
+import com.zionique.invoiceapp.models.*;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface ProductService {
 
@@ -26,4 +21,6 @@ public interface ProductService {
     List<Variant> getVariantsForPriceAndBrand(Long priceId);
 
     Variant getVariantById(Long id);
+
+    void updateVariantByIdAndStock(Long id, Double stock);
 }

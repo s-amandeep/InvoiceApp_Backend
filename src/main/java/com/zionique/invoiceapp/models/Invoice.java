@@ -32,5 +32,6 @@ public class Invoice extends BaseModel{
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<InvoiceItem> items = new ArrayList<>();
 
+    private Double totalTax;
     private Double totalValue;
 }

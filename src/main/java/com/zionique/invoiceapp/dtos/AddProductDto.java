@@ -13,6 +13,9 @@ public class AddProductDto {
     private String brandName;
     private Double price;
     private String description;
+    private Integer hsnCode;
+    private Integer taxRate;
+    private Integer cessRate;
     private String unitOfMeasurement;
     private Double stock;
 }

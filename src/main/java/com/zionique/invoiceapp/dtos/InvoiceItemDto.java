@@ -7,7 +7,7 @@ import lombok.Setter;
 @Setter
 public class InvoiceItemDto {
     private Long variantId;
-    private Float quantity;
+    private Double quantity;
     private Double sellingPrice;
     private Double totalPrice;
 }

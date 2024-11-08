@@ -14,6 +14,9 @@ public class GetProductDto {
     private Double price;
     private Long variantId;
     private String description;
+    private Integer hsnCode;
+    private Integer taxRate;
+    private Integer cessRate;
     private Double stock;
     private String unitOfMeasurement;
 }

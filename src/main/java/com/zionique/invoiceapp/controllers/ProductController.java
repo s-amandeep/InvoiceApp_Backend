@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/products")
+@RequestMapping("/api/user/products")
 public class ProductController {
 
     private ProductService productService;
@@ -73,6 +73,9 @@ public class ProductController {
             VariantDto variantDto = new VariantDto();
             variantDto.setId(variant.getId());
             variantDto.setDescription(variant.getDescription());
+            variantDto.setTaxRate(variant.getTaxRate());
+            variantDto.setCessRate(variant.getCessRate());
+            variantDto.setHsnCode(variant.getHsnCode());
             variantDto.setStock(variant.getStock());
             variantDto.setUnitOfMeasurement(variant.getUnitOfMeasurement().getName());
             variantDtos.add(variantDto);

@@ -18,6 +18,15 @@ public class Variant extends BaseModel {
     @Column(nullable = false)
     private String description;
 
+    @Column(nullable = false)
+    private Integer hsnCode;
+
+    @Column(nullable = false)
+    private Integer taxRate;
+
+    @Column(nullable = false)
+    private Integer cessRate;
+
     @ManyToOne
     @JoinColumn(name = "price_option_id", nullable = false)
     private PriceOption priceOption;

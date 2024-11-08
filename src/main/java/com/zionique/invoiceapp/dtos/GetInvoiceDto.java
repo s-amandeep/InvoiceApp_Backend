@@ -14,7 +14,9 @@ public class GetInvoiceDto {
     private String customerName;
     private String customerAddress;
     private String customerMobile;
+    private String customerGstin;
     private String invoiceDate;
     private List<GetInvoiceItemDto> itemDtoList;
     private Double totalValue;
+    private Double totalTax;
 }

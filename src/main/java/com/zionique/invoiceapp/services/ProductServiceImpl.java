@@ -1,19 +1,14 @@
 package com.zionique.invoiceapp.services;
 
 import com.zionique.invoiceapp.dtos.AddProductDto;
-import com.zionique.invoiceapp.dtos.GetBrandDto;
 import com.zionique.invoiceapp.dtos.GetProductDto;
-import com.zionique.invoiceapp.models.PriceOption;
-import com.zionique.invoiceapp.models.Brand;
-import com.zionique.invoiceapp.models.UnitOfMeasurement;
-import com.zionique.invoiceapp.models.Variant;
+import com.zionique.invoiceapp.models.*;
 import com.zionique.invoiceapp.repositories.PriceOptionRepository;
 import com.zionique.invoiceapp.repositories.BrandRepository;
 import com.zionique.invoiceapp.repositories.UnitOfMeasurementRepository;
 import com.zionique.invoiceapp.repositories.VariantRepository;
 import lombok.AllArgsConstructor;
 //import org.springframework.security.core.parameters.P;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,6 +58,9 @@ public class ProductServiceImpl implements ProductService{
             variant.setPriceOption(priceOption);
             variant.setDescription(addProductDto.getDescription());
             variant.setStock(addProductDto.getStock());
+            variant.setTaxRate(addProductDto.getTaxRate());
+            variant.setCessRate(addProductDto.getCessRate());
+            variant.setHsnCode(addProductDto.getHsnCode());
             variant.setUnitOfMeasurement(unitOfMeasurement);
             variantRepository.save(variant);
         } else
@@ -136,5 +134,18 @@ public class ProductServiceImpl implements ProductService{
         } else {
             throw new RuntimeException("Variant not found");
         }
+    }
+
+    @Override
+    public void updateVariantByIdAndStock(Long id, Double stock) {
+
+        Optional<Variant> optionalVariant = variantRepository.findById(id);
+        if (optionalVariant.isPresent()){
+            Variant variant = optionalVariant.get();
+            variant.setStock(stock);
+            variantRepository.save(variant);
+        }
+
+//        variantRepository.updateVariantById(id);
     }
 }

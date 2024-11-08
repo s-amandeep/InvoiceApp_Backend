@@ -23,7 +23,7 @@ import java.util.*;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/invoices")
+@RequestMapping("/api/user/invoices")
 public class InvoiceController {
     private InvoiceService invoiceService;
     private CustomerService customerService;
@@ -39,6 +39,7 @@ public class InvoiceController {
         return new ResponseEntity<>(getInvoiceDto, HttpStatus.CREATED);
     }
 
+    @CrossOrigin(origins = "http://localhost:5173")
     @GetMapping
     public ResponseEntity<Page<GetInvoiceDto>> getAllInvoices(@RequestParam(defaultValue = "0") int page,
                                                               @RequestParam(defaultValue = "10") int size) {
@@ -80,8 +81,10 @@ public class InvoiceController {
         getInvoiceDto.setInvoiceId(createdInvoice.getId());
         getInvoiceDto.setCustomerName(createdInvoice.getCustomer().getName());
         getInvoiceDto.setCustomerAddress(createdInvoice.getCustomer().getAddress());
+        getInvoiceDto.setCustomerGstin(createdInvoice.getCustomer().getGstin());
         getInvoiceDto.setCustomerMobile(createdInvoice.getCustomer().getMobile());
         getInvoiceDto.setInvoiceDate(formattedDate);
+        getInvoiceDto.setTotalTax(createdInvoice.getTotalTax());
         getInvoiceDto.setTotalValue(createdInvoice.getTotalValue());
         List<GetInvoiceItemDto> itemDtoList = new ArrayList<>();
         for (InvoiceItem invoiceItem: createdInvoice.getItems()){
@@ -89,6 +92,10 @@ public class InvoiceController {
             invoiceItemDto.setBrandName(invoiceItem.getVariant().getPriceOption().getBrand().getName());
             invoiceItemDto.setPrice(invoiceItem.getVariant().getPriceOption().getPrice());
             invoiceItemDto.setDescription(invoiceItem.getVariant().getDescription());
+            invoiceItemDto.setHsnCode(invoiceItem.getVariant().getHsnCode());
+            invoiceItemDto.setUnitOfMeasurement(invoiceItem.getVariant().getUnitOfMeasurement().getName());
+            invoiceItemDto.setTaxRate(invoiceItem.getVariant().getTaxRate());
+            invoiceItemDto.setCessRate(invoiceItem.getVariant().getCessRate());
             invoiceItemDto.setQuantity(invoiceItem.getQuantity());
             invoiceItemDto.setSellingPrice(invoiceItem.getSellingPrice());
             invoiceItemDto.setTotalPrice(invoiceItem.getTotalPrice());
@@ -108,6 +115,7 @@ public class InvoiceController {
         Customer customer = customerService.getCustomerFromId(addInvoiceDto.getCustomerId());
         invoice.setCustomer(customer);
         invoice.setTotalValue(addInvoiceDto.getTotalValue());
+        invoice.setTotalTax(addInvoiceDto.getTotalTax());
         List<InvoiceItem> items = new ArrayList<>();
         for (InvoiceItemDto invoiceItemDto: addInvoiceDto.getItems()){
             InvoiceItem invoiceItem = getInvoiceItemFromInvoiceItemDto(invoiceItemDto);

@@ -5,11 +5,9 @@ import com.zionique.invoiceapp.models.InvoiceItem;
 import com.zionique.invoiceapp.models.Variant;
 import com.zionique.invoiceapp.repositories.InvoiceItemRepository;
 import com.zionique.invoiceapp.repositories.InvoiceRepository;
-import com.zionique.invoiceapp.repositories.VariantRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,15 +19,28 @@ import java.util.Optional;
 public class InvoiceServiceImpl implements InvoiceService{
     private InvoiceRepository invoiceRepository;
     private InvoiceItemRepository invoiceItemRepository;
+    private ProductService productService;
 
     @Override
     @Transactional
     public Invoice addNewInvoice(Invoice invoice) {
+        // Check if each product has enough stock
+        for (InvoiceItem item : invoice.getItems()) {
+            Variant variant = item.getVariant();
+            Double stockRemaining = variant.getStock() - item.getQuantity();
+            if (stockRemaining < 0) {
+                throw new RuntimeException("Not enough stock for product: " + variant.getDescription());
+            }
+        }
+
         // Save the invoice first
         Invoice savedInvoice = invoiceRepository.save(invoice);
 
         // Set the saved invoice to each item
-        for (InvoiceItem item : invoice.getItems()) {
+        for (InvoiceItem item : savedInvoice.getItems()) {
+            Variant variant = item.getVariant();
+            Double stockRemaining = variant.getStock() - item.getQuantity();
+            productService.updateVariantByIdAndStock(variant.getId(), stockRemaining);
             item.setInvoice(savedInvoice);
         }
 
@@ -38,6 +49,11 @@ public class InvoiceServiceImpl implements InvoiceService{
 
         return savedInvoice;
     }
+
+//    @Override
+//    public void updateVariantById(Long id) {
+//        productService.updateVariantById(id);
+//    }
 
     @Override
     public Page<Invoice> getAllInvoicesSortedByDate(int page, int size) {

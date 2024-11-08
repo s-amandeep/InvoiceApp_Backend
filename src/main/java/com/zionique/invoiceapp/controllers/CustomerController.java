@@ -35,6 +35,7 @@ public class CustomerController {
                 .name(customerDto.getName())
                 .address(customerDto.getAddress())
                 .mobile(customerDto.getMobile())
+                .gstin(customerDto.getGstin())
                 .build();
         return customer;
     }
